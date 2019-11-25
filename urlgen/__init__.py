@@ -19,10 +19,10 @@ def get(url):
     print("Type : ", end="")
     if dom == "megaup.net":
         print("MEGAUP")
-        print(megaup(url=url))
+        return megaup(url=url)
     elif dom == "uploadhaven.com":
         print("UPLOADHAVEN")
-        print(uploadhaven(url=url))
+        return uploadhaven(url=url)
     else:
         print("UNKNOWN")
 
@@ -67,9 +67,8 @@ def megaup(url, s=Session()):
 
 
 if __name__ == '__main__':
-    # try:
-    #     link = getlink(url=testurl)
-    #     print(link)
-    # except:
-    #     print("Error")
-    get("https://uploadhaven.com/download/6b43f16cc0c244e6ca76b48d8669ab71")
+    try:
+        url = get(input())
+        print(url)
+    except:
+        print("Error")
