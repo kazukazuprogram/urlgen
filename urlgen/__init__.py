@@ -23,6 +23,9 @@ def get(url):
     elif dom == "uploadhaven.com":
         print("UPLOADHAVEN")
         return uploadhaven(url=url)
+    elif dom == "www.mediafire.com" or dom == "mediafire.com":
+        print("MediaFire")
+        return mediafire(url=url)
     else:
         print("UNKNOWN")
 
@@ -49,7 +52,6 @@ def uploadhaven(url, s=Session()):
 
 
 def megaup(url, s=Session()):
-    print()
     print("URL :", url)
     f = bs(s.get(url, proxies=global_proxy).text, "lxml")
     clink = f.find("div", class_="row").script.text.split("href='")[1].split("'")[0]
@@ -66,9 +68,19 @@ def megaup(url, s=Session()):
     return g.headers["location"]
 
 
+def mediafire(url, s=Session()):
+    f = bs(s.get(url, proxies=global_proxy).text, "lxml")
+    f = f.find("div", id="download_link", class_="download_link").find("a", class_="input")
+    size = f.text.split()[1][1:-1]
+    link = f.get("href")
+    print("Size :", size)
+    return link
+
+
 if __name__ == '__main__':
     try:
-        url = get(input())
+        url = get(input("URL:"))
+        print()
         print(url)
     except:
         print("Error")
