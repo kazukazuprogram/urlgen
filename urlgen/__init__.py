@@ -82,5 +82,5 @@ if __name__ == '__main__':
         url = get(input("URL:"))
         print()
         print(url)
-    except:
-        print("Error")
+    except Exception as e:
+        print("Error :", e)
