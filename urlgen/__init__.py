@@ -5,6 +5,7 @@ from time import sleep
 from bs4 import BeautifulSoup as bs
 from requests import Session
 from urllib.parse import urlparse
+from sys import argv
 
 global_proxy = None
 # global_proxy = {
@@ -15,26 +16,27 @@ global_proxy = None
 
 def get(url):
     dom = urlparse(url).netloc
-    print("Domain :", dom)
-    print("Type : ", end="")
+    # print("Domain :", dom)
+    # print("Type : ", end="")
     if dom == "megaup.net":
-        print("MEGAUP")
+        # print("MEGAUP")
         return megaup(url=url)
     elif dom == "uploadhaven.com":
-        print("UPLOADHAVEN")
+        # print("UPLOADHAVEN")
         return uploadhaven(url=url)
     elif dom == "www.mediafire.com" or dom == "mediafire.com":
-        print("MediaFire")
+        # print("MediaFire")
         return mediafire(url=url)
     else:
-        print("UNKNOWN")
+        pass
+        # print("UNKNOWN")
 
 
 def uploadhaven(url, s=Session()):
     t = s.get(url, proxies=global_proxy).text
     f = bs(t, "lxml")
     size = f.find("td", class_="responsiveInfoTable").text.split("\n")[2].strip()
-    print(size)
+    # print(size)
     f = f.find("form", class_="contactForm")
     postdata = {
         "_token": f.find("input", attrs={"name": "_token"}).get("value"),
@@ -43,28 +45,28 @@ def uploadhaven(url, s=Session()):
         "hash": f.find("input", attrs={"name": "hash"}).get("value")
     }
     for x in range(6, 0, -1):
-        print("\r" + str(x), end="")
+        # print("\r" + str(x), end="")
         sleep(1)
-    print()
+    # print()
     p = s.post(url, data=postdata).text
     f = bs(p, "lxml").find("div", class_="download-timer").a.get("href")
     return f
 
 
 def megaup(url, s=Session()):
-    print("URL :", url)
+    # print("URL :", url)
     f = bs(s.get(url, proxies=global_proxy).text, "lxml")
     clink = f.find("div", class_="row").script.text.split("href='")[1].split("'")[0]
     size = f.find("td", class_="responsiveInfoTable").text.split("\n")[2].strip()
-    print(size)
+    # print(size)
     for x in range(6, 0, -1):
-        print("\r"+str(x), end="")
+        # print("\r"+str(x), end="")
         sleep(1)
-    print()
-    print(clink)
-    print("GO!")
+    # print()
+    # print(clink)
+    # print("GO!")
     g = s.get(clink, proxies=global_proxy, allow_redirects=False)
-    print("OK")
+    # print("OK")
     return g.headers["location"]
 
 
@@ -73,14 +75,15 @@ def mediafire(url, s=Session()):
     f = f.find("div", id="download_link", class_="download_link").find("a", class_="input")
     size = f.text.split()[1][1:-1]
     link = f.get("href")
-    print("Size :", size)
+    # print("Size :", size)
     return link
 
 
 if __name__ == '__main__':
     try:
-        url = get(input("URL:"))
-        print()
+        url = get(argv[-1])
+        # print()
         print(url)
     except Exception as e:
-        print("Error :", e)
+        pass
+        # print("Error :", e)
