@@ -5,7 +5,8 @@ from time import sleep
 from bs4 import BeautifulSoup as bs
 from requests import Session
 from urllib.parse import urlparse
-from sys import argv
+from sys import argv, stderr
+from getpass import getpass
 
 global_proxy = None
 # global_proxy = {
@@ -16,34 +17,32 @@ global_proxy = None
 
 def get(url):
     dom = urlparse(url).netloc
-    # print("Domain :", dom)
-    # print("Type : ", end="")
     if dom == "megaup.net":
-        # print("MEGAUP")
-        return megaup(url=url)
+        stderr.write("TYPE : MEGAUPLOAD\n")
+        resurl = megaup(url=url)
     elif dom == "uploadhaven.com":
-        # print("UPLOADHAVEN")
-        return uploadhaven(url=url)
+        stderr.write("TYPE : UploadHaven\n")
+        resurl = uploadhaven(url=url)
     elif dom == "drive.google.com":
-        # print("GDRIVE")
-        return gdrive(url=url)
-    elif dom.split(".")[1:] == ["zippyshare", "com"]:
-        # print("ZippyShare")
-        return zippyshare(url=url)
-    elif dom == "www.mediafire.com" or dom == "mediafire.com":
-        # print("MediaFire")
-        return mediafire(url=url)
+        stderr.write("TYPE : Google Drive\n")
+        resurl = gdrive(url=url)
+    elif dom.split(".")[-2:] == ["zippyshare", "com"]:
+        stderr.write("TYPE : Zippyshare\n")
+        resurl = zippyshare(url=url)
+    elif dom.split(".")[-2:] == ['mediafire', 'com']:
+        stderr.write("TYPE : MediaFire\n")
+        resurl = mediafire(url=url)
+    elif dom == "ux.getuploader.com":
+        stderr.write("TYPE : uploader.jp\n")
+        resurl = uploaderjp(url=url)
     else:
         pass
-        # print("UNKNOWN")
+    return resurl
 
 
 def uploadhaven(url, s=Session()):
     t = s.get(url, proxies=global_proxy).text
     f = bs(t, "lxml")
-    # size = f.find("td",
-    #               class_="responsiveInfoTable").text.split("\n")[2].strip()
-    # print(size)
     f = f.find("form", class_="contactForm")
     postdata = {
         "_token": f.find("input", attrs={"name": "_token"}).get("value"),
@@ -52,9 +51,7 @@ def uploadhaven(url, s=Session()):
         "hash": f.find("input", attrs={"name": "hash"}).get("value")
     }
     for x in range(6, 0, -1):
-        # print("\r" + str(x), end="")
         sleep(1)
-    # print()
     p = s.post(url, data=postdata).text
     f = bs(p, "lxml").find("div", class_="download-timer").a.get("href")
     return f
@@ -64,8 +61,6 @@ def megaup(url, s=Session()):
     f = bs(s.get(url, proxies=global_proxy).text, "lxml")
     clink = f.find("div",
                    class_="row").script.text.split("href='")[1].split("'")[0]
-    size = f.find("td", class_="responsiveInfoTable").text.split(
-        "\n")[2].strip()
     for x in range(6, 0, -1):
         sleep(1)
     g = s.get(clink, proxies=global_proxy, allow_redirects=False)
@@ -76,9 +71,7 @@ def mediafire(url, s=Session()):
     f = bs(s.get(url, proxies=global_proxy).text, "lxml")
     f = f.find("div", id="download_link",
                class_="download_link").find("a", class_="input")
-    # size = f.text.split()[1][1:-1]
     link = f.get("href")
-    # print("Size :", size)
     return link
 
 
@@ -105,7 +98,33 @@ def zippyshare(url, s=Session()):
     return url
 
 
-if __name__ == '__main__':
+def uploaderjp(url, pw=None, s=Session()):
+    g = s.get(url)
+    f = bs(g.text, "lxml")
+    f = f.find("form", attrs={"name": "agree"})
+    if f.input.get("name") == "password":
+        if pw is None:
+            try:
+                pw = argv[argv.index("--password") + 1]
+            except ValueError:
+                password = getpass("Enter password:")
+                uploaderjp(url=url, pw=password, s=s)
+        pdata = {
+            "password": pw
+        }
+        p = s.post(g.url, data=pdata)
+        f = bs(p.text, "lxml")
+        f = f.find("form", attrs={"name": "agree"})
+    pdata = {
+        "token": f.input.get("value")
+    }
+    p = s.post(g.url, data=pdata)
+    f = bs(p.text, "lxml")
+    res = f.find("div", class_="text-center").a.get("href")
+    return res
+
+
+def wrapper():
     try:
         if len(argv) >= 2:
             url = argv[1]
@@ -115,3 +134,7 @@ if __name__ == '__main__':
         print(url)
     except Exception as e:
         print("Error :", e)
+
+
+if __name__ == '__main__':
+    wrapper()
