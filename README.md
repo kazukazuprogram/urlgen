@@ -1,5 +1,10 @@
 # urlgen
 
+## Installation
+```
+pip install urlgen
+```
+
 ## Usage
 ```
 urlgen <URL>
