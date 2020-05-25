@@ -11,6 +11,9 @@ import logging
 from subprocess import Popen
 from os import environ
 
+__version__ = "0.1.0"
+__author__ = "kazukazuprogram"
+
 formatter = "[%(levelname)s] %(message)s"
 logging.basicConfig(level=logging.INFO, format=formatter)
 global_proxy = None
@@ -159,8 +162,22 @@ def native_download(url, s=Session()):
     print(length, filename)
 
 
+def print_readme():
+    t = """urlgen version {ver}
+Usage: urlgen <URL>
+
+Options:
+    -d : Download file.
+    -D : Download file using external downloader.
+         (Can specify $EXDLCOM environ)""".format(ver=__version__)
+    print(t)
+
+
 def wrapper(url=None, s=Session()):
     try:
+        if "--help" in argv or "-h" in argv:
+            print_readme()
+            exit()
         if url is not None:
             pass
         elif len(argv) >= 2:
