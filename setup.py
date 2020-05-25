@@ -7,7 +7,7 @@ except IOError:
 
 setup(
     name="urlgen",
-    version="0.0.0",
+    version="0.1.0",
     license="MIT",
     author="kazukazuprogram",
     packages=find_packages(),
@@ -16,6 +16,8 @@ setup(
     install_requires=open("requirements.txt").read().splitlines(),
     classifiers=[
         "Programming Language :: Python",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         'License :: OSI Approved :: Python Software Foundation License',
         'Operating System :: MacOS :: MacOS X',
