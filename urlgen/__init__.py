@@ -17,7 +17,7 @@ __author__ = "kazukazuprogram"
 formatter = "[%(levelname)s] %(message)s"
 logging.basicConfig(level=logging.INFO, format=formatter)
 global_proxy = None
-external_download_command = "aria2c {}"
+external_download_command = "aria2c \"{}\""
 # global_proxy = {
 #     "http": "172.24.2.60:15080",
 #     "https": "172.24.2.60:15080"
