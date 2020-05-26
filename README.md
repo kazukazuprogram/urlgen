@@ -15,6 +15,7 @@ urlgen <URL>
 `--password <password>`  
   Specify password. (available only uploader.jp)  
   If not specified a prompt will be opened.  
+<!--
 `--download, -d`  
   Download file.  
 `--external-downloader <Commandline>`  
@@ -23,12 +24,12 @@ urlgen <URL>
 `-o, --output <file>`  
   Specify output filename.  
   This is valid only when "--external-downloader" is not specified.  
-
+-->
 
 ## Available sites
 - MEGAUPLOAD
 - UploadHaven
-- Google Drive
+- Google Drive (bug not fixed)
 - Zippyshare
 - MediaFire
 - uploader.jp  

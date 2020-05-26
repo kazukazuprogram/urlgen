@@ -11,13 +11,17 @@ import logging
 from subprocess import Popen
 from os import environ
 
-__version__ = "0.1.0"
+__version__ = "0.0.1"
 __author__ = "kazukazuprogram"
 
 formatter = "[%(levelname)s] %(message)s"
 logging.basicConfig(level=logging.INFO, format=formatter)
 global_proxy = None
-external_download_command = "aria2c \"{}\""
+external_downloader = "aria2c"
+external_downloader_command = {
+    "aria2c": "aria2c --header=\"{cookie_header}\" \"{url}\" -x1 -s1",
+    "curl": "curl -kLO -H \"{cookie_header}\" \"{url}\""
+}
 # global_proxy = {
 #     "http": "172.24.2.60:15080",
 #     "https": "172.24.2.60:15080"
@@ -101,8 +105,9 @@ def gdrive(url, s=Session()):
     f = bs(g.text, "lxml")
     url = "https://drive.google.com" + \
         f.find("a", id="uc-download-link").get("href")
-    o = s.head(url, allow_redirects=True)
-    return o.url
+    # o = s.head(url, allow_redirects=True)
+    # return o.url
+    return url
 
 
 def zippyshare(url, s=Session()):
@@ -140,12 +145,18 @@ def uploaderjp(url, pw=None, s=Session()):
     return res
 
 
-def external_download(url):
+def external_download(url, s):
+    stderr.write("URL: {}\nDownloader: {}\n".format(url, external_downloader))
+    c = s.cookies.get_dict()
+    ch = "Cookie:"
+    for k in c:
+        ch += " {}={};".format(k, c[k])
     if "EXDLCOM" in list(environ):
         # Specify download command from args in the future
         com = environ["EXDLCOM"].format(url)
     else:
-        com = external_download_command.format(url)
+        com = external_downloader_command[external_downloader]\
+            .format(url=url, cookie_header=ch)
     p = Popen(com)
     p.wait()
 
@@ -167,8 +178,8 @@ def print_readme():
 Usage: urlgen <URL>
 
 Options:
-    -d : Download file.
-    -D : Download file using external downloader.
+    -d : Download file. (feature)
+    -D : Download file using external downloader. (feature)
          (Can specify $EXDLCOM environ)""".format(ver=__version__)
     print(t)
 
@@ -181,19 +192,28 @@ def wrapper(url=None, s=Session()):
         if url is not None:
             pass
         elif len(argv) >= 2:
-            url = argv[1]
+            for x in argv[1:]:
+                if x[0] != "-":
+                    url = x
+                    break
         else:
             stderr.write("URL>")
             url = input()
         url = get(url=url, s=s)
-        if "--download" in argv or "-d" in argv or True:
-            native_download(url, s=s)
+        if True:
+            pass
+        elif "--download" in argv or "-d" in argv:
+            stderr.write("This option will be implemented in the future.")
+            # native_download(url, s=s)
         elif "--external-download" in argv or "-D" in argv:
-            external_download(url)
+            stderr.write("This option will be implemented in the future.")
+            # external_download(url, s=s)
         else:
             stdout.write(url)
     except Exception as e:
-        stderr.write("Error :", e, "\n")
+        stderr.write("Error : {}\n".format(e))
+    external_download(url, s=s)
+    exit()
 
 
 if __name__ == '__main__':
