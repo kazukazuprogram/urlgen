@@ -14,7 +14,7 @@ from os import environ
 from urllib3 import disable_warnings
 disable_warnings()
 
-__version__ = "0.0.2"
+__version__ = "0.0.1"
 __author__ = "kazukazuprogram"
 
 formatter = "[%(levelname)s] %(message)s"
