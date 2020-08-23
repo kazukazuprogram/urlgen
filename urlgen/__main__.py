@@ -11,7 +11,10 @@ import logging
 from subprocess import Popen
 from os import environ
 
-__version__ = "0.0.1"
+from urllib3 import disable_warnings
+disable_warnings()
+
+__version__ = "0.0.2"
 __author__ = "kazukazuprogram"
 
 formatter = "[%(levelname)s] %(message)s"
@@ -19,13 +22,9 @@ logging.basicConfig(level=logging.INFO, format=formatter)
 global_proxy = None
 external_downloader = "aria2c"
 external_downloader_command = {
-    "aria2c": "aria2c --header=\"{cookie_header}\" \"{url}\" -x1 -s1",
+    "aria2c": "aria2c --header=\"{cookie_header}\" \"{url}\" -x4 -s4 --check-certificate=false",
     "curl": "curl -kLO -H \"{cookie_header}\" \"{url}\""
 }
-# global_proxy = {
-#     "http": "172.24.2.60:15080",
-#     "https": "172.24.2.60:15080"
-# }
 
 
 def get(url, s=Session()):
@@ -54,7 +53,7 @@ def get(url, s=Session()):
 
 
 def uploadhaven(url, s=Session()):
-    t = s.get(url, proxies=global_proxy).text
+    t = s.get(url, proxies=global_proxy, verify=False).text
     f = bs(t, "lxml")
     f = f.find("form", class_="contactForm")
     postdata = {
@@ -65,7 +64,7 @@ def uploadhaven(url, s=Session()):
     }
     for x in range(6, 0, -1):
         sleep(1)
-    p = s.post(url, data=postdata).text
+    p = s.post(url, data=postdata, verify=False).text
     f = bs(p, "lxml").find("div", class_="download-timer").a.get("href")
     return f
 
@@ -152,12 +151,11 @@ def external_download(url, s):
     for k in c:
         ch += " {}={};".format(k, c[k])
     if "EXDLCOM" in list(environ):
-        # Specify download command from args in the future
         com = environ["EXDLCOM"].format(url)
     else:
         com = external_downloader_command[external_downloader]\
             .format(url=url, cookie_header=ch)
-    p = Popen(com)
+    p = Popen(com, shell=True)
     p.wait()
 
 
@@ -171,6 +169,11 @@ def native_download(url, s=Session()):
             filename = x[1][10:-1]
             break
     print(length, filename)
+    g.raise_for_status()
+    with open(filename, 'wb') as fp:
+        for chunk in g.iter_content(chunk_size=8192):
+            if chunk:
+                fp.write(chunk)
 
 
 def print_readme():
@@ -200,21 +203,27 @@ def wrapper(url=None, s=Session()):
             stderr.write("URL>")
             url = input()
         url = get(url=url, s=s)
-        if True:
-            pass
-        elif "--download" in argv or "-d" in argv:
+        if "--download" in argv or "-d" in argv:
             stderr.write("This option will be implemented in the future.")
             # native_download(url, s=s)
         elif "--external-download" in argv or "-D" in argv:
-            stderr.write("This option will be implemented in the future.")
-            # external_download(url, s=s)
+            external_download(url, s=s)
         else:
-            stdout.write(url)
+            stdout.write(url + "\n")
     except Exception as e:
         stderr.write("Error : {}\n".format(e))
-    external_download(url, s=s)
-    exit()
 
 
 if __name__ == '__main__':
-    wrapper()
+    testURL = [
+        "https://megaup.net/1yrsa/testfile.txt",  # MegaUp
+        "https://uploadhaven.com/download/d8a61be68bfe30c3bf0d4646579353c8",  # UploadHaven
+    ]
+    if "--test" in argv:
+        n = 1
+        for url in testURL:
+            stderr.write("[TEST] {:02d}\n".format(n))
+            wrapper(url)
+            n += 1
+    else:
+        wrapper()

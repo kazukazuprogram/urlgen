@@ -15,16 +15,14 @@ urlgen <URL>
 `--password <password>`  
   Specify password. (available only uploader.jp)  
   If not specified a prompt will be opened.  
-<!--
-`--download, -d`  
+  `--download, -d`  
   Download file.  
-`--external-downloader <Commandline>`  
+  `--external-downloader <Commandline>`  
   Specify downloader command and args.  
   By default, the URL is added at the end, but you can specify the URL location by inserting "{URL}" in the Commandline.  
 `-o, --output <file>`  
   Specify output filename.  
   This is valid only when "--external-downloader" is not specified.  
--->
 
 ## Available sites
 - MEGAUPLOAD
